@@ -28,7 +28,7 @@ public class SpringAppApplicationTests {
 		ResponseEntity<String> entity = httpClient.getForEntity(url, String.class);
 		//then
 		Assertions.assertThat(entity.getStatusCodeValue()).isEqualTo(200);
-		Assertions.assertThat(entity.getBody()).isEqualTo("Hello World!");
+		Assertions.assertThat(entity.getBody()).isEqualTo("Hello Heroku World!");
 	}
 
 }
