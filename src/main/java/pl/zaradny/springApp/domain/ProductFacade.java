@@ -1,16 +1,14 @@
 package pl.zaradny.springApp.domain;
 
+import org.springframework.http.ResponseEntity;
+
 public interface ProductFacade {
 
-    //get
     ProductResponseDto findById(String id);
 
-    //create
     ProductResponseDto create(ProductRequestDto productRequest);
 
-    //update
-    ProductResponseDto updateById(String id, ProductRequestDto productRequestDto);
+    ProductResponseDto update(String id, ProductRequestDto productRequestDto);
 
-    //delete
-    ProductResponseDto deleteById(String id);
+    ResponseEntity<Void> deleteById(String id);
 }

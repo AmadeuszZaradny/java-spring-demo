@@ -1,5 +1,6 @@
 package pl.zaradny.springApp.api;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.zaradny.springApp.domain.ProductFacade;
 import pl.zaradny.springApp.domain.ProductRequestDto;
@@ -7,7 +8,7 @@ import pl.zaradny.springApp.domain.ProductResponseDto;
 
 @RestController
 @RequestMapping("/products")
-public class ProductEndpoint {
+class ProductEndpoint {
 
     private final ProductFacade productFacade;
 
@@ -26,13 +27,13 @@ public class ProductEndpoint {
     }
 
     @DeleteMapping("/{id}")
-    ProductResponseDto deleteProduct(@PathVariable String id){
+    ResponseEntity<Void> deleteProduct(@PathVariable String id){
         return productFacade.deleteById(id);
     }
 
     @PutMapping("/{id}")
     ProductResponseDto updateProduct(@PathVariable String id, @RequestBody ProductRequestDto productRequestDto){
-        return  productFacade.updateById(id, productRequestDto);
+        return  productFacade.update(id, productRequestDto);
     }
 
 }
