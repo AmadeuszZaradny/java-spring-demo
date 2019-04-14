@@ -8,15 +8,21 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
 import pl.zaradny.springApp.SpringAppApplicationTests;
 import pl.zaradny.springApp.domain.ProductFacade;
 import pl.zaradny.springApp.domain.ProductRequestDto;
 import pl.zaradny.springApp.domain.ProductResponseDto;
+import pl.zaradny.springApp.domain.ProductsResponseDto;
 import pl.zaradny.springApp.exceptions.ProductNotFoundException;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
 
+
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ProductEndpointTest extends SpringAppApplicationTests {
 
 
@@ -41,6 +47,22 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
         //then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody()).isEqualToComparingFieldByField(existingProduct);
+    }
+
+
+    @Test
+    public void shouldGetListOfAllProducts(){
+        //given
+        ProductResponseDto prd1 = productFacade.create(new ProductRequestDto("product1"));
+        ProductResponseDto prd2 = productFacade.create(new ProductRequestDto("product2"));
+        List<ProductResponseDto> products = productFacade.getAll().getProducts();
+
+        //when
+        ResponseEntity<ProductsResponseDto> result = httpClient.getForEntity(productsUrl, ProductsResponseDto.class);
+
+        //then
+        assertTrue(result.getBody().getProducts().contains(prd1));
+        assertTrue(result.getBody().getProducts().contains(prd2));
     }
 
     @Test

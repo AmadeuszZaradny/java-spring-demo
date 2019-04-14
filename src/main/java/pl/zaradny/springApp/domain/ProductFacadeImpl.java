@@ -6,7 +6,10 @@ import org.springframework.stereotype.Component;
 import pl.zaradny.springApp.infrastructure.ProductRepository;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 class ProductFacadeImpl implements ProductFacade {
@@ -39,6 +42,15 @@ class ProductFacadeImpl implements ProductFacade {
     public ResponseEntity<Void> deleteById(String id) {
         productRepository.deleteById(id);
         return  new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @Override
+    public ProductsResponseDto getAll() {
+        List<Product> allProducts = productRepository.getAll();
+        List<ProductResponseDto> response = allProducts.stream().map(product -> new ProductResponseDto(product.getId(), product.getName()))
+                .sorted(Comparator.comparing(ProductResponseDto::getId)).collect(Collectors.toList());
+
+        return new ProductsResponseDto(response);
     }
 
     @Override

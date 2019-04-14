@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.zaradny.springApp.domain.ProductFacade;
 import pl.zaradny.springApp.domain.ProductRequestDto;
 import pl.zaradny.springApp.domain.ProductResponseDto;
+import pl.zaradny.springApp.domain.ProductsResponseDto;
 
 @RestController
 @RequestMapping("/products")
@@ -34,6 +35,11 @@ class ProductEndpoint {
     @PutMapping("/{id}")
     ProductResponseDto updateProduct(@PathVariable String id, @RequestBody ProductRequestDto productRequestDto){
         return  productFacade.update(id, productRequestDto);
+    }
+
+    @GetMapping
+    ProductsResponseDto getAllProducts(){
+        return productFacade.getAll();
     }
 
 }
