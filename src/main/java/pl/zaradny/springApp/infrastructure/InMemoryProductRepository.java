@@ -4,8 +4,7 @@ import org.springframework.stereotype.Repository;
 import pl.zaradny.springApp.domain.Product;
 import pl.zaradny.springApp.exceptions.ProductNotFoundException;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 public class InMemoryProductRepository implements ProductRepository {
@@ -45,4 +44,8 @@ public class InMemoryProductRepository implements ProductRepository {
         }
     }
 
+    @Override
+    public List<Product> getAll() {
+        return List.copyOf(products.values());
+    }
 }

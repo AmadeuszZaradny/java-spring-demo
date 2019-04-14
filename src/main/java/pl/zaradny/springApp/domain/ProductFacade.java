@@ -11,4 +11,6 @@ public interface ProductFacade {
     ProductResponseDto update(String id, ProductRequestDto productRequestDto);
 
     ResponseEntity<Void> deleteById(String id);
+
+    ProductsResponseDto getAll();
 }
