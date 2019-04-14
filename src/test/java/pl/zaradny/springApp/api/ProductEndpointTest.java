@@ -10,10 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import pl.zaradny.springApp.SpringAppApplicationTests;
-import pl.zaradny.springApp.domain.ProductFacade;
-import pl.zaradny.springApp.domain.ProductRequestDto;
-import pl.zaradny.springApp.domain.ProductResponseDto;
-import pl.zaradny.springApp.domain.ProductsResponseDto;
+import pl.zaradny.springApp.domain.*;
 import pl.zaradny.springApp.exceptions.ProductNotFoundException;
 
 import java.util.List;
@@ -39,7 +36,7 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldGetExistingProduct(){
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("product");
+        ProductRequestDto requestDto = new ProductRequestDto("product", new PriceDto("100", "PLN"));
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -53,8 +50,8 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldGetListOfAllProducts(){
         //given
-        ProductResponseDto prd1 = productFacade.create(new ProductRequestDto("product1"));
-        ProductResponseDto prd2 = productFacade.create(new ProductRequestDto("product2"));
+        ProductResponseDto prd1 = productFacade.create(new ProductRequestDto("product1", new PriceDto("100", "PLN")));
+        ProductResponseDto prd2 = productFacade.create(new ProductRequestDto("product2", new PriceDto("150", "EUR")));
         List<ProductResponseDto> products = productFacade.getAll().getProducts();
 
         //when
@@ -78,7 +75,7 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldCreateProduct(){
         //given
-        final ProductRequestDto product = new ProductRequestDto("iphone");
+        final ProductRequestDto product = new ProductRequestDto("iphone", new PriceDto("100", "PLN"));
         String productJson = mapToJson(product);
         //when
         ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
@@ -90,7 +87,7 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldDeleteExistingProduct(){
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("product");
+        ProductRequestDto requestDto = new ProductRequestDto("product", new PriceDto("100", "PLN"));
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -120,8 +117,8 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldUpdateExistingProduct(){
         //given
-        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product"));
-        ProductRequestDto requestDto = new ProductRequestDto("product2");
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product", new PriceDto("100", "PLN")));
+        ProductRequestDto requestDto = new ProductRequestDto("product2", new PriceDto("100", "PLN"));
         final String productJson = mapToJson(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -138,9 +135,9 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldResponse404HttpCodeWhenUpdatesNonExistingProduct(){
         //given
-        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product"));
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product", new PriceDto("100", "PLN")));
         productFacade.deleteById(existingProduct.getId());
-        ProductRequestDto requestDto = new ProductRequestDto("product2");
+        ProductRequestDto requestDto = new ProductRequestDto("product2", new PriceDto("100", "PLN"));
         final String productJson = mapToJson(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when

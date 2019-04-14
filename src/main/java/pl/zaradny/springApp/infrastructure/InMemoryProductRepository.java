@@ -1,9 +1,11 @@
 package pl.zaradny.springApp.infrastructure;
 
 import org.springframework.stereotype.Repository;
+import pl.zaradny.springApp.domain.Price;
 import pl.zaradny.springApp.domain.Product;
 import pl.zaradny.springApp.exceptions.ProductNotFoundException;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Repository
@@ -36,7 +38,29 @@ public class InMemoryProductRepository implements ProductRepository {
     @Override
     public Product updateById(Product product, String name) {
         if(products.containsKey(product.getId())){
-            Product newProduct = new Product(product.getId(), name, product.getCreatedAt());
+            Product newProduct = new Product(product.getId(), name, product.getPrice(), product.getCreatedAt());
+            products.replace(product.getId(), newProduct);
+            return newProduct;
+        }else{
+            throw new ProductNotFoundException();
+        }
+    }
+
+    public Product updateById(Product product, String amount, String currency) {
+        if(products.containsKey(product.getId())){
+            Price newPrice = new Price(new BigDecimal(amount), Currency.getInstance(currency));
+            Product newProduct = new Product(product.getId(), product.getName(), newPrice, product.getCreatedAt());
+            products.replace(product.getId(), newProduct);
+            return newProduct;
+        }else{
+            throw new ProductNotFoundException();
+        }
+    }
+
+    public Product updateById(Product product, String name, String amount, String currency) {
+        if(products.containsKey(product.getId())){
+            Price newPrice = new Price(new BigDecimal(amount), Currency.getInstance(currency));
+            Product newProduct = new Product(product.getId(), name, newPrice, product.getCreatedAt());
             products.replace(product.getId(), newProduct);
             return newProduct;
         }else{
