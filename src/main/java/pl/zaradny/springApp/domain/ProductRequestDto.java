@@ -27,13 +27,18 @@ public class ProductRequestDto {
     }
 
     public boolean isValidToCreate(){
-        return name != null && !name.equals("") && price != null
-                && !price.getAmount().equals("") && !price.getCurrency().equals("");
+        return name != null && !name.equals("") && price != null && price.getAmount() != null
+                && !price.getAmount().equals("") && price.getCurrency() != null && !price.getCurrency().equals("");
     }
 
     public boolean isValidToUpdate(){
-        return (name != null && !name.equals("")) || (price != null
-                && !price.getAmount().equals("") && !price.getCurrency().equals(""));
+        boolean isOnlyName = name != null && !name.equals("") && price == null;
+        boolean isOnlyPrice = name == null && price != null && price.getAmount() != null && !price.getAmount().equals("")
+                && price.getCurrency() != null && !price.getCurrency().equals("");
+        boolean isPriceWithName =  name != null && !name.equals("") && price != null && price.getAmount() != null
+                && !price.getAmount().equals("") && price.getCurrency() != null && !price.getCurrency().equals("");
+
+        return isOnlyName || isOnlyPrice || isPriceWithName;
     }
 
     @Override

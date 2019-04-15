@@ -13,8 +13,6 @@ import pl.zaradny.springApp.SpringAppApplicationTests;
 import pl.zaradny.springApp.domain.*;
 import pl.zaradny.springApp.exceptions.ProductNotFoundException;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
 
@@ -52,7 +50,6 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
         //given
         ProductResponseDto prd1 = productFacade.create(new ProductRequestDto("product1", new PriceDto("100", "PLN")));
         ProductResponseDto prd2 = productFacade.create(new ProductRequestDto("product2", new PriceDto("150", "EUR")));
-        List<ProductResponseDto> products = productFacade.getAll().getProducts();
 
         //when
         ResponseEntity<ProductsResponseDto> result = httpClient.getForEntity(productsUrl, ProductsResponseDto.class);
@@ -82,6 +79,16 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
         //then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
         assertThat(result.getBody().getName()).isEqualTo("iphone");
+    }
+
+    @Test
+    public void shouldResponse400HttpCodeWhenCreatesWithEmptyPriceFields(){
+        //given
+        final String json = jsonWithoutPriceField("product");
+        //when
+        ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(json), ProductResponseDto.class);
+        //then
+        assertThat(result.getStatusCodeValue()).isEqualTo(400);
     }
 
     @Test
@@ -133,6 +140,21 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     }
 
     @Test
+    public void shouldResponse400HttpCodeWhenUpdatesWithBadPriceField(){
+        //given
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product", new PriceDto("100", "PLN")));
+        final String json = jsonWithBadPriceField("product", "10.00");
+        final String url = productsUrl + existingProduct.getId();
+        //when
+        ResponseEntity<ProductResponseDto> result = httpClient.exchange(url,
+                HttpMethod.PUT,
+                getHttpRequest(json),
+                ProductResponseDto.class);
+        //then
+        assertThat(result.getStatusCodeValue()).isEqualTo(400);
+    }
+
+    @Test
     public void shouldResponse404HttpCodeWhenUpdatesNonExistingProduct(){
         //given
         ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product", new PriceDto("100", "PLN")));
@@ -161,5 +183,18 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
         HttpHeaders httpHeaders =  new HttpHeaders();
         httpHeaders.set("content-type","application/json");
         return new HttpEntity<>(json, httpHeaders);
+    }
+
+    String jsonWithoutPriceField (String name){
+        return "{ \"name\": \""+ name +"\" }";
+    }
+
+    String jsonWithBadPriceField (String name, String amount){
+        return "{ " +
+                "\"name\": \""+ name +"\"," +
+                "\"price\":" + "{" +
+                    "\"amount\":  \""+ amount +"\"" +
+                    "}" +
+                " }";
     }
 }

@@ -3,6 +3,7 @@ package pl.zaradny.springApp.domain;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import pl.zaradny.springApp.exceptions.BadRequestException;
 import pl.zaradny.springApp.infrastructure.ProductRepository;
 
 import java.math.BigDecimal;
@@ -33,7 +34,7 @@ class ProductFacadeImpl implements ProductFacade {
     @Override
     public ProductResponseDto create(ProductRequestDto productRequest) {
         if(!productRequest.isValidToCreate()){
-            throw new RuntimeException("Product can not be empty!");
+            throw new BadRequestException();
         }
         String id = UUID.randomUUID().toString();
         LocalDateTime createdAt = LocalDateTime.now();
@@ -60,12 +61,10 @@ class ProductFacadeImpl implements ProductFacade {
         return new ProductsResponseDto(response);
     }
 
-
-    //TODO: add test to this feature
     @Override
     public ProductResponseDto update(String id, ProductRequestDto productRequestDto) {
         if(!productRequestDto.isValidToUpdate()){
-            throw new RuntimeException("At least one of fields (name, price) has to be filled");
+            throw new BadRequestException();
         }
         Product product = productRepository.findById(id);
         Product updatedProduct;
