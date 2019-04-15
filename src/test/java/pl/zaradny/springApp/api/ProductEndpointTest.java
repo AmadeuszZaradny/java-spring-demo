@@ -34,7 +34,8 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldGetExistingProduct(){
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("product", new PriceDto("100", "PLN"));
+        ProductRequestDto requestDto = new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build();
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -48,8 +49,10 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldGetListOfAllProducts(){
         //given
-        ProductResponseDto prd1 = productFacade.create(new ProductRequestDto("product1", new PriceDto("100", "PLN")));
-        ProductResponseDto prd2 = productFacade.create(new ProductRequestDto("product2", new PriceDto("150", "EUR")));
+        ProductResponseDto prd1 = productFacade.create(new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build());
+        ProductResponseDto prd2 = productFacade.create(new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("150", "EUR")).build());
 
         //when
         ResponseEntity<ProductsResponseDto> result = httpClient.getForEntity(productsUrl, ProductsResponseDto.class);
@@ -70,15 +73,52 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     }
 
     @Test
-    public void shouldCreateProduct(){
+    public void shouldCreateProductWithRequiredFields(){
         //given
-        final ProductRequestDto product = new ProductRequestDto("iphone", new PriceDto("100", "PLN"));
+        final ProductRequestDto product = new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build();
         String productJson = mapToJson(product);
         //when
         ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
         //then
         assertThat(result.getStatusCodeValue()).isEqualTo(200);
-        assertThat(result.getBody().getName()).isEqualTo("iphone");
+        assertThat(result.getBody().getName()).isEqualTo("product");
+        assertThat(result.getBody().getPrice().getAmount()).isEqualTo("100");
+        assertThat(result.getBody().getPrice().getCurrency()).isEqualTo("PLN");
+    }
+
+    @Test
+    public void shouldCreateProductWithImage(){
+        //given
+        final ProductRequestDto product = new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
+                .setImage(new ImageDto("https://via.placeholder.com/150")).build();
+        String productJson = mapToJson(product);
+        //when
+        ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
+        //then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getName()).isEqualTo("product");
+        assertThat(result.getBody().getPrice().getAmount()).isEqualTo("100");
+        assertThat(result.getBody().getPrice().getCurrency()).isEqualTo("PLN");
+        assertThat(result.getBody().getImage().getUrl()).isEqualTo("https://via.placeholder.com/150");
+    }
+
+    @Test
+    public void shouldCreateProductWithDescription(){
+        //given
+        final ProductRequestDto product = new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
+                .setDescription(new DescriptionDto("DescriptionDupa")).build();
+        String productJson = mapToJson(product);
+        //when
+        ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
+        //then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getName()).isEqualTo("product");
+        assertThat(result.getBody().getPrice().getAmount()).isEqualTo("100");
+        assertThat(result.getBody().getPrice().getCurrency()).isEqualTo("PLN");
+        assertThat(result.getBody().getDescription().getText()).isEqualTo("DescriptionDupa");
     }
 
     @Test
@@ -94,7 +134,8 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldDeleteExistingProduct(){
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("product", new PriceDto("100", "PLN"));
+        ProductRequestDto requestDto = new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build();
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -122,10 +163,12 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     }
 
     @Test
-    public void shouldUpdateExistingProduct(){
+    public void shouldUpdateNameOfExistingProduct(){
         //given
-        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product", new PriceDto("100", "PLN")));
-        ProductRequestDto requestDto = new ProductRequestDto("product2", new PriceDto("100", "PLN"));
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build());
+        ProductRequestDto requestDto = new ProductRequestDto
+                .ProductRequestDtoBuilder("product2", new PriceDto("100", "PLN")).build();
         final String productJson = mapToJson(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -140,10 +183,73 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     }
 
     @Test
+    public void shouldUpdateDescriptionOfExistingProduct(){
+        //given
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build());
+        ProductRequestDto requestDto = new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
+                .setDescription(new DescriptionDto("DescriptionDupa")).build();
+        final String productJson = mapToJson(requestDto);
+        final String url = productsUrl + existingProduct.getId();
+        //when
+        ResponseEntity<ProductResponseDto> result = httpClient.exchange(url,
+                HttpMethod.PUT,
+                getHttpRequest(productJson),
+                ProductResponseDto.class);
+        //then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getId()).isEqualTo(existingProduct.getId());
+        assertThat(result.getBody().getDescription().getText()).isEqualTo(requestDto.getDescription().getText());
+    }
+
+    @Test
+    public void shouldUpdateNamePriceImageAndDescriptionOfExistingProduct(){
+        //given
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build());
+        ProductRequestDto requestDto = new ProductRequestDto
+                .ProductRequestDtoBuilder("product2", new PriceDto("150", "EUR"))
+                .setDescription(new DescriptionDto("DescriptionDupa"))
+                .setImage(new ImageDto("https://via.placeholder.com/150")).build();
+        final String productJson = mapToJson(requestDto);
+        final String url = productsUrl + existingProduct.getId();
+        //when
+        ResponseEntity<ProductResponseDto> result = httpClient.exchange(url,
+                HttpMethod.PUT,
+                getHttpRequest(productJson),
+                ProductResponseDto.class);
+        //then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getId()).isEqualTo(existingProduct.getId());
+        assertThat(result.getBody().getName()).isEqualTo(requestDto.getName());
+        assertThat(result.getBody().getPrice().getAmount()).isEqualTo(requestDto.getPrice().getAmount());
+        assertThat(result.getBody().getPrice().getCurrency()).isEqualTo(requestDto.getPrice().getCurrency());
+        assertThat(result.getBody().getImage().getUrl()).isEqualTo(requestDto.getImage().getUrl());
+        assertThat(result.getBody().getDescription().getText()).isEqualTo(requestDto.getDescription().getText());
+    }
+
+    @Test
+    public void shouldNotAddDescriptionToCreatingProductWhenItIsTooLong(){
+        //given
+        String longDescription = new String(new char[401]).replace('\0', ' ');
+        System.out.println(longDescription.length());
+        final ProductRequestDto product = new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
+                .setDescription(new DescriptionDto(longDescription)).build();
+        String productJson = mapToJson(product);
+        //when
+        ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
+        //then
+        assertThat(result.getBody().getDescription().getText()).isEqualTo(null);
+    }
+
+    @Test
     public void shouldResponse400HttpCodeWhenUpdatesWithBadPriceField(){
         //given
-        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product", new PriceDto("100", "PLN")));
-        final String json = jsonWithBadPriceField("product", "10.00");
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build());
+        final String json = jsonWithBadPriceField("10.00");
         final String url = productsUrl + existingProduct.getId();
         //when
         ResponseEntity<ProductResponseDto> result = httpClient.exchange(url,
@@ -157,9 +263,11 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldResponse404HttpCodeWhenUpdatesNonExistingProduct(){
         //given
-        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product", new PriceDto("100", "PLN")));
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build());
         productFacade.deleteById(existingProduct.getId());
-        ProductRequestDto requestDto = new ProductRequestDto("product2", new PriceDto("100", "PLN"));
+        ProductRequestDto requestDto = new ProductRequestDto
+                .ProductRequestDtoBuilder("product2", new PriceDto("100", "PLN")).build();
         final String productJson = mapToJson(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -189,9 +297,8 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
         return "{ \"name\": \""+ name +"\" }";
     }
 
-    String jsonWithBadPriceField (String name, String amount){
+    String jsonWithBadPriceField (String amount){
         return "{ " +
-                "\"name\": \""+ name +"\"," +
                 "\"price\":" + "{" +
                     "\"amount\":  \""+ amount +"\"" +
                     "}" +

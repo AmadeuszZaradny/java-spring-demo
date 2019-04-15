@@ -1,7 +1,9 @@
 package pl.zaradny.springApp.infrastructure;
 
+import pl.zaradny.springApp.domain.Description;
 import pl.zaradny.springApp.domain.Product;
 
+import java.net.URL;
 import java.util.List;
 
 public interface ProductRepository {
@@ -14,7 +16,8 @@ public interface ProductRepository {
 
     Product updateById(Product product, String name);
     Product updateById(Product product, String amount, String currency);
-    Product updateById(Product product, String name, String amount, String currency);
+    Product updateById(Product product, URL imageURL);
+    Product updateById(Product product, Description description);
 
     List<Product> getAll();
 }

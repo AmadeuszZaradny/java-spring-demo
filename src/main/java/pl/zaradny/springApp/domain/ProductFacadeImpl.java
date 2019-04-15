@@ -4,9 +4,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import pl.zaradny.springApp.exceptions.BadRequestException;
+import pl.zaradny.springApp.exceptions.BadURLFormException;
 import pl.zaradny.springApp.infrastructure.ProductRepository;
 
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Currency;
@@ -28,7 +31,9 @@ class ProductFacadeImpl implements ProductFacade {
         Product product = productRepository.findById(id);
         PriceDto priceDto = new PriceDto(product.getPrice().getAmount().toString(),
                                          product.getPrice().getCurrency().getCurrencyCode());
-        return new ProductResponseDto(product.getId(), product.getName(), priceDto);
+        ImageDto image = new ImageDto(product.getImage());
+        DescriptionDto description = new DescriptionDto(product.getDescription());
+        return new ProductResponseDto(product.getId(), product.getName(), priceDto, image, description);
     }
 
     @Override
@@ -40,9 +45,18 @@ class ProductFacadeImpl implements ProductFacade {
         LocalDateTime createdAt = LocalDateTime.now();
         Price price = new Price(new BigDecimal(productRequest.getPrice().getAmount()),
                                 Currency.getInstance(productRequest.getPrice().getCurrency()));
-        Product product = new Product(id, productRequest.getName(), price, createdAt);
+        Image image = null;
+        if(productRequest.isImageValid()) {
+            image = new Image(createURL(productRequest.getImage().getUrl()));
+        }
+        Description description = null;
+        if(productRequest.isDescriptionValid()){
+            description = new Description(productRequest.getDescription().getText());
+        }
+        Product product = new Product(id, productRequest.getName(), price, image, description, createdAt);
         productRepository.save(product);
-        return new ProductResponseDto(product.getId(), product.getName(), new PriceDto(price));
+        return new ProductResponseDto(product.getId(), product.getName(), new PriceDto(price),
+                new ImageDto(product.getImage()), new DescriptionDto(product.getDescription()));
     }
 
     @Override
@@ -55,7 +69,8 @@ class ProductFacadeImpl implements ProductFacade {
     public ProductsResponseDto getAll() {
         List<Product> allProducts = productRepository.getAll();
         List<ProductResponseDto> response = allProducts.stream().map(product -> new ProductResponseDto(product.getId(),
-                 product.getName(), new PriceDto(product.getPrice())))
+                 product.getName(), new PriceDto(product.getPrice()), new ImageDto(product.getImage()),
+                 new DescriptionDto(product.getDescription())))
                 .sorted(Comparator.comparing(ProductResponseDto::getId)).collect(Collectors.toList());
 
         return new ProductsResponseDto(response);
@@ -67,17 +82,28 @@ class ProductFacadeImpl implements ProductFacade {
             throw new BadRequestException();
         }
         Product product = productRepository.findById(id);
-        Product updatedProduct;
-        if(productRequestDto.getName() != null && productRequestDto.getPrice() != null){
-            updatedProduct = productRepository.updateById(product, productRequestDto.getName(),
-                    productRequestDto.getPrice().getAmount(), productRequestDto.getPrice().getCurrency());
-        }else if(productRequestDto.getName() != null){
-            updatedProduct = productRepository.updateById(product, productRequestDto.getName());
-        }else {
-            updatedProduct = productRepository.updateById(product, productRequestDto.getPrice().getAmount(),
+        if(productRequestDto.isNameValid()){
+            product = productRepository.updateById(product, productRequestDto.getName());
+        }
+        if(productRequestDto.isPriceValid()){
+            product = productRepository.updateById(product, productRequestDto.getPrice().getAmount(),
                     productRequestDto.getPrice().getCurrency());
         }
-        return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName(), new PriceDto(updatedProduct.getPrice()));
+        if(productRequestDto.isImageValid()){
+            product = productRepository.updateById(product, createURL(productRequestDto.getImage().getUrl()));
+        }
+        if(productRequestDto.isDescriptionValid()){
+            product = productRepository.updateById(product, new Description(productRequestDto.getDescription()));
+        }
+        return new ProductResponseDto(product.getId(), product.getName(), new PriceDto(product.getPrice()),
+                new ImageDto(product.getImage()), new DescriptionDto(product.getDescription()));
     }
 
+    private URL createURL(String url){
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            throw new BadURLFormException();
+        }
+    }
 }
