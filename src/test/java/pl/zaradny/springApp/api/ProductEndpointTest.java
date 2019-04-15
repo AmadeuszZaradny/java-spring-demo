@@ -10,13 +10,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import pl.zaradny.springApp.SpringAppApplicationTests;
-import pl.zaradny.springApp.domain.ProductFacade;
-import pl.zaradny.springApp.domain.ProductRequestDto;
-import pl.zaradny.springApp.domain.ProductResponseDto;
-import pl.zaradny.springApp.domain.ProductsResponseDto;
+import pl.zaradny.springApp.domain.*;
 import pl.zaradny.springApp.exceptions.ProductNotFoundException;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
@@ -39,7 +34,7 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldGetExistingProduct(){
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("product");
+        ProductRequestDto requestDto = new ProductRequestDto("product", new PriceDto("100", "PLN"));
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -53,9 +48,8 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldGetListOfAllProducts(){
         //given
-        ProductResponseDto prd1 = productFacade.create(new ProductRequestDto("product1"));
-        ProductResponseDto prd2 = productFacade.create(new ProductRequestDto("product2"));
-        List<ProductResponseDto> products = productFacade.getAll().getProducts();
+        ProductResponseDto prd1 = productFacade.create(new ProductRequestDto("product1", new PriceDto("100", "PLN")));
+        ProductResponseDto prd2 = productFacade.create(new ProductRequestDto("product2", new PriceDto("150", "EUR")));
 
         //when
         ResponseEntity<ProductsResponseDto> result = httpClient.getForEntity(productsUrl, ProductsResponseDto.class);
@@ -78,7 +72,7 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldCreateProduct(){
         //given
-        final ProductRequestDto product = new ProductRequestDto("iphone");
+        final ProductRequestDto product = new ProductRequestDto("iphone", new PriceDto("100", "PLN"));
         String productJson = mapToJson(product);
         //when
         ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
@@ -88,9 +82,19 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     }
 
     @Test
+    public void shouldResponse400HttpCodeWhenCreatesWithEmptyPriceFields(){
+        //given
+        final String json = jsonWithoutPriceField("product");
+        //when
+        ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(json), ProductResponseDto.class);
+        //then
+        assertThat(result.getStatusCodeValue()).isEqualTo(400);
+    }
+
+    @Test
     public void shouldDeleteExistingProduct(){
         //given
-        ProductRequestDto requestDto = new ProductRequestDto("product");
+        ProductRequestDto requestDto = new ProductRequestDto("product", new PriceDto("100", "PLN"));
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -120,8 +124,8 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldUpdateExistingProduct(){
         //given
-        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product"));
-        ProductRequestDto requestDto = new ProductRequestDto("product2");
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product", new PriceDto("100", "PLN")));
+        ProductRequestDto requestDto = new ProductRequestDto("product2", new PriceDto("100", "PLN"));
         final String productJson = mapToJson(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -136,11 +140,26 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     }
 
     @Test
+    public void shouldResponse400HttpCodeWhenUpdatesWithBadPriceField(){
+        //given
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product", new PriceDto("100", "PLN")));
+        final String json = jsonWithBadPriceField("product", "10.00");
+        final String url = productsUrl + existingProduct.getId();
+        //when
+        ResponseEntity<ProductResponseDto> result = httpClient.exchange(url,
+                HttpMethod.PUT,
+                getHttpRequest(json),
+                ProductResponseDto.class);
+        //then
+        assertThat(result.getStatusCodeValue()).isEqualTo(400);
+    }
+
+    @Test
     public void shouldResponse404HttpCodeWhenUpdatesNonExistingProduct(){
         //given
-        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product"));
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto("product", new PriceDto("100", "PLN")));
         productFacade.deleteById(existingProduct.getId());
-        ProductRequestDto requestDto = new ProductRequestDto("product2");
+        ProductRequestDto requestDto = new ProductRequestDto("product2", new PriceDto("100", "PLN"));
         final String productJson = mapToJson(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -164,5 +183,18 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
         HttpHeaders httpHeaders =  new HttpHeaders();
         httpHeaders.set("content-type","application/json");
         return new HttpEntity<>(json, httpHeaders);
+    }
+
+    String jsonWithoutPriceField (String name){
+        return "{ \"name\": \""+ name +"\" }";
+    }
+
+    String jsonWithBadPriceField (String name, String amount){
+        return "{ " +
+                "\"name\": \""+ name +"\"," +
+                "\"price\":" + "{" +
+                    "\"amount\":  \""+ amount +"\"" +
+                    "}" +
+                " }";
     }
 }
