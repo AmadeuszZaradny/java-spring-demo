@@ -45,7 +45,7 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
         assertThat(result.getBody()).isEqualToComparingFieldByField(existingProduct);
     }
 
-
+    //TODO: sprawdzic kolejnosc
     @Test
     public void shouldGetListOfAllProducts(){
         //given
@@ -256,6 +256,20 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
                 HttpMethod.PUT,
                 getHttpRequest(json),
                 ProductResponseDto.class);
+        //then
+        assertThat(result.getStatusCodeValue()).isEqualTo(400);
+    }
+
+    @Test
+    public void shouldResponse400HttpCodeWhenURLIsNotCorrect(){
+        //given
+        ProductRequestDto productRequestDto = new ProductRequestDto
+                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
+                .setImage(new ImageDto("siema")).build();
+        String productJson = mapToJson(productRequestDto);
+        //when
+        ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
+
         //then
         assertThat(result.getStatusCodeValue()).isEqualTo(400);
     }
