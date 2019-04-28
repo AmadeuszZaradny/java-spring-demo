@@ -7,8 +7,12 @@ public final class Image {
 
     private final URL url;
 
-    public Image(URL url) {
+    private Image(URL url) {
         this.url = url;
+    }
+
+    public static Image build(URL url){
+        return new Image(url);
     }
 
     public URL getUrl() {

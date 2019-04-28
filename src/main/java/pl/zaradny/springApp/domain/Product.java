@@ -1,7 +1,11 @@
 package pl.zaradny.springApp.domain;
 
+import com.google.common.base.Preconditions;
+import pl.zaradny.springApp.exceptions.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 public final class Product {
 
@@ -12,8 +16,7 @@ public final class Product {
     private final Description description;
     private final LocalDateTime createdAt;
 
-
-    public Product(String id, String name, Price price, Image image, Description description, LocalDateTime createdAt) {
+    private Product(String id, String name, Price price, LocalDateTime createdAt, Image image, Description description) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -34,12 +37,12 @@ public final class Product {
         return price;
     }
 
-    public Description getDescription() {
-        return description;
+    public Optional<Description> getDescription() {
+        return Optional.ofNullable(description);
     }
 
-    public Image getImage() {
-        return image;
+    public Optional<Image> getImage() {
+        return Optional.ofNullable(image);
     }
 
     public LocalDateTime getCreatedAt() {
@@ -76,37 +79,102 @@ public final class Product {
                 '}';
     }
 
-    public static final class ProductBuilder{
+    public static Buildable build(){
+        return new ProductBuilder();
+    }
 
-        //required
-        private final String id;
-        private final String name;
-        private final Price price;
-        private final LocalDateTime createdAt;
+    public interface Buildable {
+        Product build();
+        Buildable withId(String id);
+        Buildable withName(String name);
+        Buildable withPrice(Price price);
+        Buildable withCreatedAt(LocalDateTime createdAt);
+        Buildable withImage(Image newImage);
+        Buildable withDescription(Description description);
+    }
 
-        //optional
+    private static class ProductBuilder implements Buildable{
+
+        private String id;
+        private String name;
+        private Price price;
+        private LocalDateTime createdAt;
         private Image image;
         private Description description;
 
-        public ProductBuilder(String id, String name, Price price, LocalDateTime createdAt) {
+        public ProductBuilder() {}
+
+        public Buildable withId(String id) {
             this.id = id;
-            this.name = name;
-            this.price = price;
-            this.createdAt = createdAt;
+            return this;
         }
 
-        public ProductBuilder setImage(Image newImage){
+        public Buildable withName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Buildable withPrice(Price price) {
+            this.price = price;
+            return this;
+        }
+
+        public Buildable withCreatedAt(LocalDateTime createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        public Buildable withImage(Image newImage){
             this.image = newImage;
             return this;
         }
 
-        public ProductBuilder setDescription(Description description){
+        public Buildable withDescription(Description description){
             this.description = description;
             return this;
         }
 
+        private boolean isNameValid() {
+            try{
+                String validatedName = Preconditions.checkNotNull(this.name);
+                if(validatedName.isEmpty()) throw new EmptyProductNameException();
+            }catch (NullPointerException e){
+                throw new EmptyProductNameException();
+            }
+            return true;
+        }
+
+        private boolean isPriceValid(){
+            try {
+                Preconditions.checkNotNull(this.price);
+            }catch (NullPointerException e){
+                throw new ProductPriceIsNullException();
+            }
+            return true;
+        }
+
+        private boolean isCreatedAtValid(){
+            try{
+                Preconditions.checkNotNull(this.createdAt);
+            }catch (NullPointerException e){
+                throw new EmptyCreatedAtException();
+            }
+            return true;
+        }
+
+        private boolean isIdValid(){
+            try {
+                Preconditions.checkNotNull(this.id);
+            }catch (NullPointerException e){
+                throw new EmptyIdException();
+            }
+            return true;
+        }
+
         public Product build(){
-            return new Product(this.id, this.name, this.price, this.image, this.description, this.createdAt);
+            if(isIdValid() && isCreatedAtValid() && isPriceValid() && isNameValid()){
+                return new Product(this.id, this.name, this.price, this.createdAt, this.image, this.description);
+            }else throw new BadProductFieldException();
         }
     }
 }

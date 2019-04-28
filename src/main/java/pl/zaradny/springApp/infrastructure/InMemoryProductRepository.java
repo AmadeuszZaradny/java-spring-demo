@@ -39,48 +39,9 @@ public class InMemoryProductRepository implements ProductRepository {
     }
 
     @Override
-    public Product updateById(Product product, String name) {
-        if(products.containsKey(product.getId())){
-            Product newProduct = new Product(product.getId(), name, product.getPrice(), product.getImage(),
-                    product.getDescription(), product.getCreatedAt());
-            products.replace(product.getId(), newProduct);
-            return newProduct;
-        }else{
-            throw new ProductNotFoundException();
-        }
-    }
-
-    @Override
-    public Product updateById(Product product, String amount, String currency) {
-        if(products.containsKey(product.getId())){
-            Price newPrice = new Price(new BigDecimal(amount), Currency.getInstance(currency));
-            Product newProduct = new Product(product.getId(), product.getName(), newPrice, product.getImage(),
-                    product.getDescription(), product.getCreatedAt());
-            products.replace(product.getId(), newProduct);
-            return newProduct;
-        }else{
-            throw new ProductNotFoundException();
-        }
-    }
-
-    @Override
-    public Product updateById(Product product, URL url){
-        if(products.containsKey(product.getId())){
-            Product newProduct = new Product(product.getId(), product.getName(), product.getPrice(), new Image(url),
-                    product.getDescription(), product.getCreatedAt());
-            products.replace(product.getId(), newProduct);
-            return newProduct;
-        }else{
-            throw new ProductNotFoundException();
-        }
-    }
-
-    @Override
-    public Product updateById(Product product, Description description){
-        if(products.containsKey(product.getId())){
-            Product newProduct = new Product(product.getId(), product.getName(), product.getPrice(), product.getImage(),
-                    description, product.getCreatedAt());
-            products.replace(product.getId(), newProduct);
+    public Product update(Product oldProduct, Product newProduct){
+        if(products.containsKey(oldProduct.getId())){
+            products.replace(oldProduct.getId(), newProduct);
             return newProduct;
         }else{
             throw new ProductNotFoundException();

@@ -14,10 +14,7 @@ public interface ProductRepository {
 
     void deleteById(String id);
 
-    Product updateById(Product product, String name);
-    Product updateById(Product product, String amount, String currency);
-    Product updateById(Product product, URL imageURL);
-    Product updateById(Product product, Description description);
+    Product update(Product oldProduct, Product newProduct);
 
     List<Product> getAll();
 }

@@ -12,6 +12,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import pl.zaradny.springApp.SpringAppApplicationTests;
 import pl.zaradny.springApp.domain.*;
 import pl.zaradny.springApp.exceptions.ProductNotFoundException;
+import pl.zaradny.springApp.testUtils.ProductRequestDtoBuilder;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
@@ -34,8 +35,7 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldGetExistingProduct(){
         //given
-        ProductRequestDto requestDto = new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build();
+        ProductRequestDto requestDto = new ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build();
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -45,14 +45,13 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
         assertThat(result.getBody()).isEqualToComparingFieldByField(existingProduct);
     }
 
-    //TODO: sprawdzic kolejnosc
     @Test
     public void shouldGetListOfAllProducts(){
         //given
-        ProductResponseDto prd1 = productFacade.create(new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build());
-        ProductResponseDto prd2 = productFacade.create(new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("150", "EUR")).build());
+        ProductResponseDto prd1 = productFacade.create(new ProductRequestDtoBuilder("product",
+                new PriceDto("100", "PLN")).build());
+        ProductResponseDto prd2 = productFacade.create(new ProductRequestDtoBuilder("product",
+                new PriceDto("150", "EUR")).build());
 
         //when
         ResponseEntity<ProductsResponseDto> result = httpClient.getForEntity(productsUrl, ProductsResponseDto.class);
@@ -75,8 +74,8 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldCreateProductWithRequiredFields(){
         //given
-        final ProductRequestDto product = new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build();
+        final ProductRequestDto product = new ProductRequestDtoBuilder("product",
+                new PriceDto("100", "PLN")).build();
         String productJson = mapToJson(product);
         //when
         ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
@@ -90,9 +89,8 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldCreateProductWithImage(){
         //given
-        final ProductRequestDto product = new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
-                .setImage(new ImageDto("https://via.placeholder.com/150")).build();
+        final ProductRequestDto product = new ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
+                .withImage(new ImageDto("https://via.placeholder.com/150")).build();
         String productJson = mapToJson(product);
         //when
         ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
@@ -107,9 +105,8 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldCreateProductWithDescription(){
         //given
-        final ProductRequestDto product = new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
-                .setDescription(new DescriptionDto("DescriptionDupa")).build();
+        final ProductRequestDto product = new ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
+                .withDescription(new DescriptionDto("DescriptionDupa")).build();
         String productJson = mapToJson(product);
         //when
         ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
@@ -134,8 +131,7 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldDeleteExistingProduct(){
         //given
-        ProductRequestDto requestDto = new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build();
+        ProductRequestDto requestDto = new ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build();
         ProductResponseDto existingProduct = productFacade.create(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -165,10 +161,10 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldUpdateNameOfExistingProduct(){
         //given
-        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build());
-        ProductRequestDto requestDto = new ProductRequestDto
-                .ProductRequestDtoBuilder("product2", new PriceDto("100", "PLN")).build();
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDtoBuilder("product",
+                new PriceDto("100", "PLN")).build());
+        ProductRequestDto requestDto = new ProductRequestDtoBuilder("product2",
+                new PriceDto("100", "PLN")).build();
         final String productJson = mapToJson(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -185,11 +181,10 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldUpdateDescriptionOfExistingProduct(){
         //given
-        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build());
-        ProductRequestDto requestDto = new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
-                .setDescription(new DescriptionDto("DescriptionDupa")).build();
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDtoBuilder("product",
+                new PriceDto("100", "PLN")).build());
+        ProductRequestDto requestDto = new ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
+                .withDescription(new DescriptionDto("DescriptionDupa")).build();
         final String productJson = mapToJson(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -206,12 +201,12 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldUpdateNamePriceImageAndDescriptionOfExistingProduct(){
         //given
-        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build());
-        ProductRequestDto requestDto = new ProductRequestDto
-                .ProductRequestDtoBuilder("product2", new PriceDto("150", "EUR"))
-                .setDescription(new DescriptionDto("DescriptionDupa"))
-                .setImage(new ImageDto("https://via.placeholder.com/150")).build();
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDtoBuilder("product",
+                new PriceDto("100", "PLN")).build());
+        ProductRequestDto requestDto = new ProductRequestDtoBuilder("product2",
+                new PriceDto("150", "EUR"))
+                .withDescription(new DescriptionDto("DescriptionDupa"))
+                .withImage(new ImageDto("https://via.placeholder.com/150")).build();
         final String productJson = mapToJson(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -230,25 +225,25 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     }
 
     @Test
-    public void shouldNotAddDescriptionToCreatingProductWhenItIsTooLong(){
+    public void shouldResponse400HttpCodeWhenDescriptionIsTooLong(){
         //given
         String longDescription = new String(new char[401]).replace('\0', ' ');
         System.out.println(longDescription.length());
-        final ProductRequestDto product = new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
-                .setDescription(new DescriptionDto(longDescription)).build();
+        final ProductRequestDto product = new ProductRequestDtoBuilder("product",
+                new PriceDto("100", "PLN"))
+                .withDescription(new DescriptionDto(longDescription)).build();
         String productJson = mapToJson(product);
         //when
         ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
         //then
-        assertThat(result.getBody().getDescription().getText()).isEqualTo(null);
+        assertThat(result.getStatusCodeValue()).isEqualTo(400);
     }
 
     @Test
     public void shouldResponse400HttpCodeWhenUpdatesWithBadPriceField(){
         //given
-        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build());
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDtoBuilder("product",
+                new PriceDto("100", "PLN")).build());
         final String json = jsonWithBadPriceField("10.00");
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -263,9 +258,9 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldResponse400HttpCodeWhenURLIsNotCorrect(){
         //given
-        ProductRequestDto productRequestDto = new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
-                .setImage(new ImageDto("siema")).build();
+        ProductRequestDto productRequestDto = new ProductRequestDtoBuilder("product",
+                new PriceDto("100", "PLN"))
+                .withImage(new ImageDto("siema")).build();
         String productJson = mapToJson(productRequestDto);
         //when
         ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
@@ -277,11 +272,11 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     @Test
     public void shouldResponse404HttpCodeWhenUpdatesNonExistingProduct(){
         //given
-        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDto
-                .ProductRequestDtoBuilder("product", new PriceDto("100", "PLN")).build());
+        ProductResponseDto existingProduct = productFacade.create(new ProductRequestDtoBuilder("product",
+                new PriceDto("100", "PLN")).build());
         productFacade.deleteById(existingProduct.getId());
-        ProductRequestDto requestDto = new ProductRequestDto
-                .ProductRequestDtoBuilder("product2", new PriceDto("100", "PLN")).build();
+        ProductRequestDto requestDto = new ProductRequestDtoBuilder("product2",
+                new PriceDto("100", "PLN")).build();
         final String productJson = mapToJson(requestDto);
         final String url = productsUrl + existingProduct.getId();
         //when
@@ -314,8 +309,8 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     String jsonWithBadPriceField (String amount){
         return "{ " +
                 "\"price\":" + "{" +
-                    "\"amount\":  \""+ amount +"\"" +
-                    "}" +
+                "\"amount\":  \""+ amount +"\"" +
+                "}" +
                 " }";
     }
 }

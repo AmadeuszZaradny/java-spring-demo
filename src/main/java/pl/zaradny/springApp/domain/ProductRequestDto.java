@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductRequestDto {
@@ -40,29 +42,20 @@ public class ProductRequestDto {
         return image;
     }
 
-    public boolean isNameValid(){
-        return name != null && !name.equals("");
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ProductRequestDto that = (ProductRequestDto) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(price, that.price) &&
+                Objects.equals(image, that.image) &&
+                Objects.equals(description, that.description);
     }
 
-    public boolean isPriceValid(){
-        return price != null && price.getAmount() != null && !price.getAmount().equals("")
-                && price.getCurrency() != null && !price.getCurrency().equals("");
-    }
-
-    public boolean isImageValid(){
-        return image != null && !image.getUrl().equals("") && image.getUrl() != null;
-    }
-
-    public boolean isDescriptionValid(){
-        return description != null && !description.getText().equals("") && description.getText().length() <= 400;
-    }
-
-    public boolean isValidToCreate(){
-        return isNameValid() && isPriceValid();
-    }
-
-    public boolean isValidToUpdate(){
-        return isNameValid() || isPriceValid() || isImageValid() || isDescriptionValid();
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, price, image, description);
     }
 
     @Override
@@ -73,33 +66,5 @@ public class ProductRequestDto {
                 ", image=" + image +
                 ", description=" + description +
                 '}';
-    }
-
-    public static final class ProductRequestDtoBuilder{
-        //requited
-        private final String name;
-        private final PriceDto price;
-        //optional
-        private ImageDto image;
-        private  DescriptionDto description;
-
-        public ProductRequestDtoBuilder(String name, PriceDto price) {
-            this.name = name;
-            this.price = price;
-        }
-
-        public ProductRequestDtoBuilder setDescription(DescriptionDto description){
-            this.description = description;
-            return this;
-        }
-
-        public ProductRequestDtoBuilder setImage(ImageDto image){
-            this.image = image;
-            return this;
-        }
-
-        public ProductRequestDto build(){
-            return new ProductRequestDto(this.name, this.price, this.image, this.description);
-        }
     }
 }
