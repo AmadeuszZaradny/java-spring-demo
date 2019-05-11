@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
 import java.util.Objects;
 
 
@@ -14,16 +15,23 @@ public class ProductRequestDto {
     private final PriceDto price;
     private final ImageDto image;
     private final DescriptionDto description;
+    private final List<TagDto> tags;
 
     @JsonCreator
     public ProductRequestDto(@JsonProperty("name") String name,
                              @JsonProperty("price") PriceDto price,
                              @JsonProperty("image") ImageDto image,
-                             @JsonProperty("description") DescriptionDto description) {
+                             @JsonProperty("description") DescriptionDto description,
+                             @JsonProperty("tags") List<TagDto> tags) {
         this.name = name;
         this.price = price;
         this.image = image;
         this.description = description;
+        this.tags = tags;
+    }
+
+    public List<TagDto> getTags() {
+        return tags;
     }
 
     public String getName() {
@@ -50,21 +58,12 @@ public class ProductRequestDto {
         return Objects.equals(name, that.name) &&
                 Objects.equals(price, that.price) &&
                 Objects.equals(image, that.image) &&
-                Objects.equals(description, that.description);
+                Objects.equals(description, that.description) &&
+                Objects.equals(tags, that.tags);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, price, image, description);
-    }
-
-    @Override
-    public String toString() {
-        return "ProductRequestDto{" +
-                "name='" + name + '\'' +
-                ", price=" + price +
-                ", image=" + image +
-                ", description=" + description +
-                '}';
+        return Objects.hash(name, price, image, description, tags);
     }
 }

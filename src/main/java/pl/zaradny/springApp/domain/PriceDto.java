@@ -19,11 +19,6 @@ public class PriceDto {
         this.currency = currency;
     }
 
-    public PriceDto(Price price){
-        this.amount = price.getAmount().toString();
-        this.currency = price.getCurrency().getCurrencyCode();
-    }
-
     public String getAmount() {
         return amount;
     }

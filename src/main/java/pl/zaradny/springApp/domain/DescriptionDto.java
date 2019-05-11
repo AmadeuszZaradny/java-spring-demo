@@ -7,21 +7,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public final class DescriptionDto {
+public class DescriptionDto {
 
     private final String text;
 
     @JsonCreator
     public DescriptionDto(@JsonProperty("text") String text) {
         this.text = text;
-    }
-
-    public DescriptionDto(Description description){
-        if(description != null) {
-            this.text = description.getText();
-        }else {
-            this.text = null;
-        }
     }
 
     public String getText() {

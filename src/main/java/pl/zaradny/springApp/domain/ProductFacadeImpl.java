@@ -28,11 +28,11 @@ class ProductFacadeImpl implements ProductFacade {
     @Override
     public ProductResponseDto findById(String id){
         Product product = productRepository.findById(id);
-        PriceDto priceDto = new PriceDto(product.getPrice().getAmount().toString(),
-                                         product.getPrice().getCurrency().getCurrencyCode());
-        ImageDto image = new ImageDto(product.getImage().orElse(null));
-        DescriptionDto description = new DescriptionDto(product.getDescription().orElse(null));
-        return new ProductResponseDto(product.getId(), product.getName(), priceDto, image, description);
+        PriceDto priceDto = createPriceDtoToResponse(product.getPrice());
+        ImageDto imageDto = createImageDtoToResponse(product.getImage().orElse(null));
+        DescriptionDto descriptionDto = createDescriptionDtoToResponse(product.getDescription().orElse(null));
+        List<TagDto> tagsDto = createTagsDtoToResponse(product.getTags().orElse(null));
+        return new ProductResponseDto(product.getId(), product.getName(), priceDto, imageDto, descriptionDto, tagsDto);
     }
 
     @Override
@@ -42,11 +42,13 @@ class ProductFacadeImpl implements ProductFacade {
         Price price = getPriceFromRequest(productRequest);
         Image image = getImageFromRequest(productRequest);
         Description description = getDescriptionFromRequest(productRequest);
+        List<Tag> tags = getTagsFromRequest(productRequest);
         Product product = Product.build().withId(id).withName(productRequest.getName()).withPrice(price)
-                .withCreatedAt(createdAt).withDescription(description).withImage(image).build();
+                .withCreatedAt(createdAt).withDescription(description).withImage(image).withTags(tags).build();
         productRepository.save(product);
-        return new ProductResponseDto(product.getId(), product.getName(), new PriceDto(price),
-                new ImageDto(product.getImage().orElse(null)), new DescriptionDto(product.getDescription().orElse(null)));
+        return new ProductResponseDto(product.getId(), product.getName(), createPriceDtoToResponse(price),
+                createImageDtoToResponse(image), createDescriptionDtoToResponse(description),
+                createTagsDtoToResponse(tags));
     }
 
     @Override
@@ -59,8 +61,10 @@ class ProductFacadeImpl implements ProductFacade {
     public ProductsResponseDto getAll() {
         List<Product> allProducts = productRepository.getAll();
         List<ProductResponseDto> response = allProducts.stream().map(product -> new ProductResponseDto(product.getId(),
-                 product.getName(), new PriceDto(product.getPrice()), new ImageDto(product.getImage().orElse(null)),
-                 new DescriptionDto(product.getDescription().orElse(null))))
+                 product.getName(), createPriceDtoToResponse(product.getPrice()),
+                 createImageDtoToResponse(product.getImage().orElse(null)),
+                 createDescriptionDtoToResponse(product.getDescription().orElse(null)),
+                 createTagsDtoToResponse(product.getTags().orElse(null))))
                 .sorted(Comparator.comparing(ProductResponseDto::getId)).collect(Collectors.toList());
 
         return new ProductsResponseDto(response);
@@ -73,46 +77,67 @@ class ProductFacadeImpl implements ProductFacade {
         Price price = getPriceFromRequest(productRequestDto);
         Image image = getImageFromRequest(productRequestDto);
         Description description = getDescriptionFromRequest(productRequestDto);
+        List<Tag> tags = getTagsFromRequest(productRequestDto);
         Product newProduct = Product.build().withName(name).withPrice(price).withId(id).withCreatedAt(oldProduct.getCreatedAt())
-                .withImage(image).withDescription(description).build();
+                .withImage(image).withDescription(description).withTags(tags).build();
         Product updatedProduct = productRepository.update(oldProduct, newProduct);
-        return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName(), new PriceDto(updatedProduct.getPrice()),
-                new ImageDto(updatedProduct.getImage().orElse(null)), new DescriptionDto(updatedProduct.getDescription().orElse(null)));
+        return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName(),
+                createPriceDtoToResponse(updatedProduct.getPrice()),
+                createImageDtoToResponse(updatedProduct.getImage().orElse(null)),
+                createDescriptionDtoToResponse(updatedProduct.getDescription().orElse(null)),
+                createTagsDtoToResponse(updatedProduct.getTags().orElse(null)));
+    }
+
+    private PriceDto createPriceDtoToResponse(Price price){
+        return new PriceDto(price.getAmount().toString(), price.getCurrency().getCurrencyCode());
+    }
+
+    private DescriptionDto createDescriptionDtoToResponse(Description description){
+        if(description != null){
+            return new DescriptionDto(description.getText());
+        }else return null;
+    }
+
+    private ImageDto createImageDtoToResponse(Image image){
+        if(image != null){
+            return new ImageDto(image.getUrl().toString());
+        }else return null;
+    }
+
+    private List<TagDto> createTagsDtoToResponse(List<Tag> tags){
+        if(tags != null){
+            return tags.stream().map(tag -> new TagDto(tag.getName())).collect(Collectors.toList());
+        }else return null;
+    }
+
+    private List<Tag> getTagsFromRequest(ProductRequestDto productRequest){
+        try {
+            return productRequest.getTags().stream().map(tag -> Tag.build(tag.getName()))
+                    .collect(Collectors.toList());
+        }catch (NullPointerException e){
+            return null;
+        }
     }
 
     private Description getDescriptionFromRequest(ProductRequestDto productRequest){
         try {
-            if (productRequest.getDescription() != null)
-                return Description.build(productRequest.getDescription().getText());
-            else return null;
+            return Description.build(productRequest.getDescription().getText());
         }catch (NullPointerException e){
             return null;
         }
-
     }
 
     private Image getImageFromRequest(ProductRequestDto productRequest){
         try{
-            if(productRequest.getImage() != null)
-                if(productRequest.getImage().getUrl() != null )return Image.build(new URL(productRequest.getImage().getUrl()));
-                else return null;
-            else return null;
+            return Image.build(productRequest.getImage().getUrl());
         }catch (NullPointerException e){
             return null;
-        }catch (MalformedURLException e){
-            throw new BadImageURLException();
         }
     }
 
     private Price getPriceFromRequest(ProductRequestDto productRequest) {
         if(productRequest.getPrice() == null)  throw new ProductPriceIsNullException();
-        PriceDto priceDto = productRequest.getPrice();
-        try {
-            return Price.build(new BigDecimal(priceDto.getAmount()),
-                    Currency.getInstance(priceDto.getCurrency()));
-        }catch (IllegalArgumentException | NullPointerException e){
-            throw new BadPriceException();
-        }
+        return Price.build(productRequest.getPrice().getAmount(), productRequest.getPrice().getCurrency());
     }
 
 }

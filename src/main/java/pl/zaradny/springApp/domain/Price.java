@@ -27,6 +27,16 @@ public final class Price {
         return new Price(amount, currency);
     }
 
+    public static Price build(String amount, String currency) {
+        try {
+            BigDecimal priceAmount = new BigDecimal(amount);
+            Currency priceCurrency = Currency.getInstance(currency);
+            return new Price(priceAmount, priceCurrency);
+        }catch (IllegalArgumentException | NullPointerException e){
+            throw new BadPriceException();
+        }
+    }
+
     public BigDecimal getAmount() {
         return amount;
     }

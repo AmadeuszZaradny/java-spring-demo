@@ -1,5 +1,8 @@
 package pl.zaradny.springApp.domain;
 
+import pl.zaradny.springApp.exceptions.BadImageURLException;
+
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
 
@@ -11,8 +14,12 @@ public final class Image {
         this.url = url;
     }
 
-    public static Image build(URL url){
-        return new Image(url);
+    public static Image build(String url){
+        try {
+            return new Image(new URL(url));
+        } catch (MalformedURLException e) {
+            throw new BadImageURLException();
+        }
     }
 
     public URL getUrl() {

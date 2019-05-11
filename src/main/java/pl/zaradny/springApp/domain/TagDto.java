@@ -7,29 +7,29 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ImageDto {
-    private final String url;
+public class TagDto {
 
+    private final String name;
 
     @JsonCreator
-    public ImageDto(@JsonProperty("url") String url) {
-        this.url = url;
+    public TagDto(@JsonProperty("name") String name) {
+        this.name = name;
     }
 
-    public String getUrl() {
-        return url;
+    public String getName() {
+        return name;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ImageDto imageDto = (ImageDto) o;
-        return Objects.equals(url, imageDto.url);
+        TagDto tagDto = (TagDto) o;
+        return Objects.equals(name, tagDto.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(url);
+        return Objects.hash(name);
     }
 }
