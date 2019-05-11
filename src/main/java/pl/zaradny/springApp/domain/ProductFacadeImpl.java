@@ -6,9 +6,6 @@ import org.springframework.stereotype.Component;
 import pl.zaradny.springApp.exceptions.*;
 import pl.zaradny.springApp.infrastructure.ProductRepository;
 
-import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -83,6 +80,18 @@ class ProductFacadeImpl implements ProductFacade {
                 createImageDtoToResponse(updatedProduct.getImage().orElse(null)),
                 createDescriptionDtoToResponse(updatedProduct.getDescription().orElse(null)),
                 createTagsDtoToResponse(updatedProduct.getTags().orElse(null)));
+    }
+
+    @Override
+    public ProductsResponseDto findByTag(String tagFromRequest){
+        Tag tag = Tag.build(tagFromRequest);
+        List<Product> products = productRepository.findByTag(tag);
+        return new ProductsResponseDto(products.stream().map(product -> new ProductResponseDto(product.getId(),
+                product.getName(), createPriceDtoToResponse(product.getPrice()),
+                createImageDtoToResponse(product.getImage().orElse(null)),
+                createDescriptionDtoToResponse(product.getDescription().orElse(null)),
+                createTagsDtoToResponse(product.getTags().orElse(null)))).collect(Collectors.toList()));
+
     }
 
     private PriceDto createPriceDtoToResponse(Price price){

@@ -13,4 +13,6 @@ public interface ProductFacade {
     ResponseEntity<Void> deleteById(String id);
 
     ProductsResponseDto getAll();
+
+    ProductsResponseDto findByTag(String tag);
 }

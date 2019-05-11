@@ -1,9 +1,8 @@
 package pl.zaradny.springApp.infrastructure;
 
-import pl.zaradny.springApp.domain.Description;
 import pl.zaradny.springApp.domain.Product;
+import pl.zaradny.springApp.domain.Tag;
 
-import java.net.URL;
 import java.util.List;
 
 public interface ProductRepository {
@@ -17,4 +16,6 @@ public interface ProductRepository {
     Product update(Product oldProduct, Product newProduct);
 
     List<Product> getAll();
+
+    List<Product> findByTag(Tag tag);
 }

@@ -1,15 +1,11 @@
 package pl.zaradny.springApp.infrastructure;
 
 import org.springframework.stereotype.Repository;
-import pl.zaradny.springApp.domain.Description;
-import pl.zaradny.springApp.domain.Image;
-import pl.zaradny.springApp.domain.Price;
-import pl.zaradny.springApp.domain.Product;
+import pl.zaradny.springApp.domain.*;
 import pl.zaradny.springApp.exceptions.ProductNotFoundException;
 
-import java.math.BigDecimal;
-import java.net.URL;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class InMemoryProductRepository implements ProductRepository {
@@ -51,5 +47,12 @@ public class InMemoryProductRepository implements ProductRepository {
     @Override
     public List<Product> getAll() {
         return List.copyOf(products.values());
+    }
+
+    @Override
+    public List<Product> findByTag(Tag tag){
+        return products.values().stream()
+                .filter(product ->  product.getTags().isPresent() && product.getTags().get().contains(tag))
+                .collect(Collectors.toList());
     }
 }

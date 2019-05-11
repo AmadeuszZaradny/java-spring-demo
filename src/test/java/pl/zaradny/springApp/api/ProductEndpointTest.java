@@ -66,6 +66,43 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
     }
 
     @Test
+    public void shouldGetProductsWithTagFromRequestParam(){
+        //given
+        List<TagDto> tagsList = new ArrayList<>();
+        tagsList.add(new TagDto("tag"));
+        ProductResponseDto prd1 = productFacade.create(new ProductRequestDtoBuilder("product",
+                new PriceDto("100", "PLN")).withTags(tagsList).build());
+        ProductResponseDto prd2 = productFacade.create(new ProductRequestDtoBuilder("product",
+                new PriceDto("150", "EUR")).build());
+        final String url = productsUrl + "?tag=tag";
+
+        //when
+        ResponseEntity<ProductsResponseDto> result = httpClient.getForEntity(url, ProductsResponseDto.class);
+
+        //then
+        assertThat(result.getBody().getProducts().size()).isEqualTo(1);
+        assertThat(result.getBody().getProducts().get(0).getId()).isEqualTo(prd1.getId());
+    }
+
+    @Test
+    public void shouldGetAllProductsWhenTagInRequestParamIsEmpty(){
+        //given
+        List<TagDto> tagsList = new ArrayList<>();
+        tagsList.add(new TagDto("tag"));
+        ProductResponseDto prd1 = productFacade.create(new ProductRequestDtoBuilder("product",
+                new PriceDto("100", "PLN")).withTags(tagsList).build());
+        ProductResponseDto prd2 = productFacade.create(new ProductRequestDtoBuilder("product",
+                new PriceDto("150", "EUR")).build());
+        final String url = productsUrl + "?tag=";
+
+        //when
+        ResponseEntity<ProductsResponseDto> result = httpClient.getForEntity(url, ProductsResponseDto.class);
+
+        //then
+        assertThat(result.getBody().getProducts().size()).isEqualTo(2);
+    }
+
+    @Test
     public void shouldResponse404HttpCodeWhenProductDoesNotExist(){
         //given
         final String url = productsUrl + "emptyDB";
@@ -138,8 +175,8 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
         assertThat(result.getBody().getName()).isEqualTo("product");
         assertThat(result.getBody().getPrice().getAmount()).isEqualTo("100");
         assertThat(result.getBody().getPrice().getCurrency()).isEqualTo("PLN");
-        assertThat(result.getBody().getTags().contains(new TagDto("tag1"))).isTrue();
-        assertThat(result.getBody().getTags().contains(new TagDto("tag2"))).isTrue();
+        assertTrue(result.getBody().getTags().contains(new TagDto("tag1")));
+        assertTrue(result.getBody().getTags().contains(new TagDto("tag2")));
     }
 
     @Test
@@ -158,7 +195,7 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
         assertThat(result.getBody().getName()).isEqualTo("product");
         assertThat(result.getBody().getPrice().getAmount()).isEqualTo("100");
         assertThat(result.getBody().getPrice().getCurrency()).isEqualTo("PLN");
-        assertThat(result.getBody().getTags().contains(new TagDto("tag1"))).isTrue();
+        assertTrue(result.getBody().getTags().contains(new TagDto("tag1")));
         assertThat(result.getBody().getTags().size()).isEqualTo(1);
     }
 
