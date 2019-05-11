@@ -1,15 +1,15 @@
 package pl.zaradny.springApp.testUtils;
 
-import pl.zaradny.springApp.domain.DescriptionDto;
-import pl.zaradny.springApp.domain.ImageDto;
-import pl.zaradny.springApp.domain.PriceDto;
-import pl.zaradny.springApp.domain.ProductRequestDto;
+import pl.zaradny.springApp.domain.*;
+
+import java.util.List;
 
 public final class ProductRequestDtoBuilder {
     private final String name;
     private final PriceDto price;
     private ImageDto image;
     private DescriptionDto description;
+    private List<TagDto> tags;
 
     public ProductRequestDtoBuilder(String name, PriceDto price) {
         this.name = name;
@@ -26,7 +26,12 @@ public final class ProductRequestDtoBuilder {
         return this;
     }
 
+    public ProductRequestDtoBuilder withTags(List<TagDto> tags){
+        this.tags = tags;
+        return this;
+    }
+
     public ProductRequestDto build(){
-        return new ProductRequestDto(this.name, this.price, this.image, this.description);
+        return new ProductRequestDto(this.name, this.price, this.image, this.description, this.tags);
     }
 }

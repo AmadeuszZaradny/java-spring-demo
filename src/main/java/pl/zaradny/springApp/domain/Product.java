@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 public final class Product {
 
@@ -16,10 +17,10 @@ public final class Product {
     private final Image image;
     private final Description description;
     private final LocalDateTime createdAt;
-    private final List<Tag> tags;
+    private final Set<Tag> tags;
 
     private Product(String id, String name, Price price, LocalDateTime createdAt, Image image, Description description,
-                    List<Tag> tags) {
+                    Set<Tag> tags) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -53,7 +54,7 @@ public final class Product {
         return createdAt;
     }
 
-    public Optional<List<Tag>> getTags() {
+    public Optional<Set<Tag>> getTags() {
         return Optional.ofNullable(tags);
     }
 
@@ -88,11 +89,11 @@ public final class Product {
         private LocalDateTime createdAt;
         private Image image;
         private Description description;
-        private List<Tag> tags;
+        private Set<Tag> tags;
 
         private ProductBuilder() {}
 
-        public ProductBuilder withTags(List<Tag> tags){
+        public ProductBuilder withTags(Set<Tag> tags){
             this.tags = tags;
             return this;
         }

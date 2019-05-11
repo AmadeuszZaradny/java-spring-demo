@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class ProductResponseDto {
 
@@ -13,7 +14,7 @@ public class ProductResponseDto {
     private final PriceDto price;
     private final ImageDto image;
     private final DescriptionDto description;
-    private final List<TagDto> tags;
+    private final Set<TagDto> tags;
 
     @JsonCreator
     public ProductResponseDto(@JsonProperty("id") String id,
@@ -21,7 +22,7 @@ public class ProductResponseDto {
                               @JsonProperty("price") PriceDto price,
                               @JsonProperty("image") ImageDto image,
                               @JsonProperty("description") DescriptionDto description,
-                              @JsonProperty("tags") List<TagDto> tags) {
+                              @JsonProperty("tags") Set<TagDto> tags) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -30,7 +31,7 @@ public class ProductResponseDto {
         this.tags = tags;
     }
 
-    public List<TagDto> getTags() {
+    public Set<TagDto> getTags() {
         return tags;
     }
 

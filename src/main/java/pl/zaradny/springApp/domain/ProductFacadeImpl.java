@@ -10,10 +10,7 @@ import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.Currency;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -31,7 +28,7 @@ class ProductFacadeImpl implements ProductFacade {
         PriceDto priceDto = createPriceDtoToResponse(product.getPrice());
         ImageDto imageDto = createImageDtoToResponse(product.getImage().orElse(null));
         DescriptionDto descriptionDto = createDescriptionDtoToResponse(product.getDescription().orElse(null));
-        List<TagDto> tagsDto = createTagsDtoToResponse(product.getTags().orElse(null));
+        Set<TagDto> tagsDto = createTagsDtoToResponse(product.getTags().orElse(null));
         return new ProductResponseDto(product.getId(), product.getName(), priceDto, imageDto, descriptionDto, tagsDto);
     }
 
@@ -42,7 +39,7 @@ class ProductFacadeImpl implements ProductFacade {
         Price price = getPriceFromRequest(productRequest);
         Image image = getImageFromRequest(productRequest);
         Description description = getDescriptionFromRequest(productRequest);
-        List<Tag> tags = getTagsFromRequest(productRequest);
+        Set<Tag> tags = getTagsFromRequest(productRequest);
         Product product = Product.build().withId(id).withName(productRequest.getName()).withPrice(price)
                 .withCreatedAt(createdAt).withDescription(description).withImage(image).withTags(tags).build();
         productRepository.save(product);
@@ -77,7 +74,7 @@ class ProductFacadeImpl implements ProductFacade {
         Price price = getPriceFromRequest(productRequestDto);
         Image image = getImageFromRequest(productRequestDto);
         Description description = getDescriptionFromRequest(productRequestDto);
-        List<Tag> tags = getTagsFromRequest(productRequestDto);
+        Set<Tag> tags = getTagsFromRequest(productRequestDto);
         Product newProduct = Product.build().withName(name).withPrice(price).withId(id).withCreatedAt(oldProduct.getCreatedAt())
                 .withImage(image).withDescription(description).withTags(tags).build();
         Product updatedProduct = productRepository.update(oldProduct, newProduct);
@@ -104,18 +101,18 @@ class ProductFacadeImpl implements ProductFacade {
         }else return null;
     }
 
-    private List<TagDto> createTagsDtoToResponse(List<Tag> tags){
+    private Set<TagDto> createTagsDtoToResponse(Set<Tag> tags){
         if(tags != null){
-            return tags.stream().map(tag -> new TagDto(tag.getName())).collect(Collectors.toList());
+            return tags.stream().map(tag -> new TagDto(tag.getName())).collect(Collectors.toSet());
         }else return null;
     }
 
-    private List<Tag> getTagsFromRequest(ProductRequestDto productRequest){
+    private Set<Tag> getTagsFromRequest(ProductRequestDto productRequest){
         try {
             return productRequest.getTags().stream().map(tag -> Tag.build(tag.getName()))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toSet());
         }catch (NullPointerException e){
-            return null;
+            return Collections.emptySet();
         }
     }
 

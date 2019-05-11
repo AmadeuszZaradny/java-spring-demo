@@ -14,6 +14,10 @@ import pl.zaradny.springApp.domain.*;
 import pl.zaradny.springApp.exceptions.ProductNotFoundException;
 import pl.zaradny.springApp.testUtils.ProductRequestDtoBuilder;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
 
@@ -116,6 +120,60 @@ public class ProductEndpointTest extends SpringAppApplicationTests {
         assertThat(result.getBody().getPrice().getAmount()).isEqualTo("100");
         assertThat(result.getBody().getPrice().getCurrency()).isEqualTo("PLN");
         assertThat(result.getBody().getDescription().getText()).isEqualTo("DescriptionDupa");
+    }
+
+    @Test
+    public void shouldCreateProductWithTag(){
+        //given
+        List<TagDto> tagsList = new ArrayList<>();
+        tagsList.add(new TagDto("tag1"));
+        tagsList.add(new TagDto("tag2"));
+        final ProductRequestDto product = new ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
+                .withTags(tagsList).build();
+        String productJson = mapToJson(product);
+        //when
+        ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
+        //then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getName()).isEqualTo("product");
+        assertThat(result.getBody().getPrice().getAmount()).isEqualTo("100");
+        assertThat(result.getBody().getPrice().getCurrency()).isEqualTo("PLN");
+        assertThat(result.getBody().getTags().contains(new TagDto("tag1"))).isTrue();
+        assertThat(result.getBody().getTags().contains(new TagDto("tag2"))).isTrue();
+    }
+
+    @Test
+    public void shouldCreateProductWithoutRepeatingTags(){
+        //given
+        List<TagDto> tagsList = new ArrayList<>();
+        tagsList.add(new TagDto("tag1"));
+        tagsList.add(new TagDto("tag1"));
+        final ProductRequestDto product = new ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
+                .withTags(tagsList).build();
+        String productJson = mapToJson(product);
+        //when
+        ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
+        //then
+        assertThat(result.getStatusCodeValue()).isEqualTo(200);
+        assertThat(result.getBody().getName()).isEqualTo("product");
+        assertThat(result.getBody().getPrice().getAmount()).isEqualTo("100");
+        assertThat(result.getBody().getPrice().getCurrency()).isEqualTo("PLN");
+        assertThat(result.getBody().getTags().contains(new TagDto("tag1"))).isTrue();
+        assertThat(result.getBody().getTags().size()).isEqualTo(1);
+    }
+
+    @Test
+    public void shouldResponse400HttpCodeWhenCreatesWithEmptyTagName(){
+        //given
+        List<TagDto> tagsList = new ArrayList<>();
+        tagsList.add(new TagDto(""));
+        final ProductRequestDto product = new ProductRequestDtoBuilder("product", new PriceDto("100", "PLN"))
+                .withTags(tagsList).build();
+        String productJson = mapToJson(product);
+        //when
+        ResponseEntity<ProductResponseDto> result = httpClient.postForEntity(productsUrl, getHttpRequest(productJson), ProductResponseDto.class);
+        //then
+        assertThat(result.getStatusCodeValue()).isEqualTo(400);
     }
 
     @Test
