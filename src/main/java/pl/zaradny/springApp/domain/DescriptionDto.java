@@ -1,25 +1,19 @@
 package pl.zaradny.springApp.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
-public final class DescriptionDto {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class DescriptionDto {
 
     private final String text;
 
     @JsonCreator
     public DescriptionDto(@JsonProperty("text") String text) {
         this.text = text;
-    }
-
-    public DescriptionDto(Description description){
-        if(description != null) {
-            this.text = description.getText();
-        }else {
-            this.text = null;
-        }
     }
 
     public String getText() {

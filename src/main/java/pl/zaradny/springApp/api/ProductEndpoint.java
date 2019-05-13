@@ -42,4 +42,9 @@ class ProductEndpoint {
         return productFacade.getAll();
     }
 
+    @GetMapping(params = "tag")
+    ProductsResponseDto getProductsWithTag(@RequestParam String tag){
+        return productFacade.findByTag(tag);
+    }
+
 }

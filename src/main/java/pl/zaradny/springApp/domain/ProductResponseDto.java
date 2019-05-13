@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
+import java.util.Set;
 
 public class ProductResponseDto {
 
@@ -12,18 +13,25 @@ public class ProductResponseDto {
     private final PriceDto price;
     private final ImageDto image;
     private final DescriptionDto description;
+    private final Set<TagDto> tags;
 
     @JsonCreator
     public ProductResponseDto(@JsonProperty("id") String id,
                               @JsonProperty("name") String name,
                               @JsonProperty("price") PriceDto price,
                               @JsonProperty("image") ImageDto image,
-                              @JsonProperty("description") DescriptionDto description) {
+                              @JsonProperty("description") DescriptionDto description,
+                              @JsonProperty("tags") Set<TagDto> tags) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.image = image;
         this.description = description;
+        this.tags = tags;
+    }
+
+    public Set<TagDto> getTags() {
+        return tags;
     }
 
     public String getId() {
@@ -55,22 +63,12 @@ public class ProductResponseDto {
                 Objects.equals(name, that.name) &&
                 Objects.equals(price, that.price) &&
                 Objects.equals(image, that.image) &&
-                Objects.equals(description, that.description);
+                Objects.equals(description, that.description) &&
+                Objects.equals(tags, that.tags);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, price, image, description);
-    }
-
-    @Override
-    public String toString() {
-        return "ProductResponseDto{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", price=" + price +
-                ", image=" + image +
-                ", description=" + description +
-                '}';
+        return Objects.hash(id, name, price, image, description, tags);
     }
 }

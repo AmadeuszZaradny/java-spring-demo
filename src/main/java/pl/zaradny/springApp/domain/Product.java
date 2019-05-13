@@ -1,7 +1,14 @@
 package pl.zaradny.springApp.domain;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.base.Strings;
+import pl.zaradny.springApp.exceptions.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 public final class Product {
 
@@ -11,15 +18,17 @@ public final class Product {
     private final Image image;
     private final Description description;
     private final LocalDateTime createdAt;
+    private final Set<Tag> tags;
 
-
-    public Product(String id, String name, Price price, Image image, Description description, LocalDateTime createdAt) {
+    private Product(String id, String name, Price price, LocalDateTime createdAt, Image image, Description description,
+                    Set<Tag> tags) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.image = image;
         this.description = description;
         this.createdAt = createdAt;
+        this.tags = ImmutableSet.copyOf(tags);
     }
 
     public String getId() {
@@ -34,16 +43,20 @@ public final class Product {
         return price;
     }
 
-    public Description getDescription() {
-        return description;
+    public Optional<Description> getDescription() {
+        return Optional.ofNullable(description);
     }
 
-    public Image getImage() {
-        return image;
+    public Optional<Image> getImage() {
+        return Optional.ofNullable(image);
     }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public Optional<Set<Tag>> getTags() {
+        return Optional.ofNullable(tags);
     }
 
     @Override
@@ -56,57 +69,103 @@ public final class Product {
                 Objects.equals(price, product.price) &&
                 Objects.equals(image, product.image) &&
                 Objects.equals(description, product.description) &&
-                Objects.equals(createdAt, product.createdAt);
+                Objects.equals(createdAt, product.createdAt) &&
+                Objects.equals(tags, product.tags);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, price, image, description, createdAt);
+        return Objects.hash(id, name, price, image, description, createdAt, tags);
     }
 
-    @Override
-    public String toString() {
-        return "Product{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", price=" + price +
-                ", image=" + image +
-                ", description=" + description +
-                ", createdAt=" + createdAt +
-                '}';
+    public static ProductBuilder build(){
+        return new ProductBuilder();
     }
 
-    public static final class ProductBuilder{
+    public static class ProductBuilder{
 
-        //required
-        private final String id;
-        private final String name;
-        private final Price price;
-        private final LocalDateTime createdAt;
-
-        //optional
+        private String id;
+        private String name;
+        private Price price;
+        private LocalDateTime createdAt;
         private Image image;
         private Description description;
+        private Set<Tag> tags;
 
-        public ProductBuilder(String id, String name, Price price, LocalDateTime createdAt) {
-            this.id = id;
-            this.name = name;
-            this.price = price;
-            this.createdAt = createdAt;
+        private ProductBuilder() {}
+
+        public ProductBuilder withTags(Set<Tag> tags){
+            this.tags = tags;
+            return this;
         }
 
-        public ProductBuilder setImage(Image newImage){
+        public ProductBuilder withId(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public ProductBuilder withName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public ProductBuilder withPrice(Price price) {
+            this.price = price;
+            return this;
+        }
+
+        public ProductBuilder withCreatedAt(LocalDateTime createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        public ProductBuilder withImage(Image newImage){
             this.image = newImage;
             return this;
         }
 
-        public ProductBuilder setDescription(Description description){
+        public ProductBuilder withDescription(Description description){
             this.description = description;
             return this;
         }
 
+        private void validateName() {
+            if(Strings.isNullOrEmpty(this.name)){
+                throw new EmptyProductNameException();
+            }
+        }
+
+        private void validatePrice(){
+            try {
+                Preconditions.checkNotNull(this.price);
+            }catch (NullPointerException e) {
+                throw new ProductPriceIsNullException();
+            }
+        }
+
+        private void validateCreatedAt(){
+            try{
+                Preconditions.checkNotNull(this.createdAt);
+            }catch (NullPointerException e) {
+                throw new EmptyCreatedAtException();
+            }
+        }
+
+        private void validateId(){
+            try {
+                Preconditions.checkNotNull(this.id);
+            }catch (NullPointerException e) {
+                throw new EmptyIdException();
+            }
+        }
+
         public Product build(){
-            return new Product(this.id, this.name, this.price, this.image, this.description, this.createdAt);
+            validateId();
+            validateCreatedAt();
+            validatePrice();
+            validateName();
+            return new Product(this.id, this.name, this.price, this.createdAt, this.image, this.description,
+                        this.tags);
         }
     }
 }

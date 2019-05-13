@@ -1,10 +1,12 @@
 package pl.zaradny.springApp.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PriceDto {
 
     private final String amount;
@@ -15,11 +17,6 @@ public class PriceDto {
     public PriceDto(@JsonProperty("amount")  String amount, @JsonProperty("currency") String currency) {
         this.amount = amount;
         this.currency = currency;
-    }
-
-    public PriceDto(Price price){
-        this.amount = price.getAmount().toString();
-        this.currency = price.getCurrency().getCurrencyCode();
     }
 
     public String getAmount() {
