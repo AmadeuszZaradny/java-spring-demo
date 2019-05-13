@@ -31,14 +31,19 @@ class ProductFacadeImpl implements ProductFacade {
 
     @Override
     public ProductResponseDto create(ProductRequestDto productRequest) {
-        String id = UUID.randomUUID().toString();
-        LocalDateTime createdAt = LocalDateTime.now();
         Price price = getPriceFromRequest(productRequest);
         Image image = getImageFromRequest(productRequest);
         Description description = getDescriptionFromRequest(productRequest);
         Set<Tag> tags = getTagsFromRequest(productRequest);
-        Product product = Product.build().withId(id).withName(productRequest.getName()).withPrice(price)
-                .withCreatedAt(createdAt).withDescription(description).withImage(image).withTags(tags).build();
+        Product product = Product.build()
+                .withId(UUID.randomUUID().toString())
+                .withName(productRequest.getName())
+                .withPrice(price)
+                .withCreatedAt(LocalDateTime.now())
+                .withDescription(description)
+                .withImage(image)
+                .withTags(tags)
+                .build();
         productRepository.save(product);
         return new ProductResponseDto(product.getId(), product.getName(), createPriceDtoToResponse(price),
                 createImageDtoToResponse(image), createDescriptionDtoToResponse(description),
@@ -67,13 +72,15 @@ class ProductFacadeImpl implements ProductFacade {
     @Override
     public ProductResponseDto update(String id, ProductRequestDto productRequestDto) {
         Product oldProduct = productRepository.findById(id);
-        String name = productRequestDto.getName();
-        Price price = getPriceFromRequest(productRequestDto);
-        Image image = getImageFromRequest(productRequestDto);
-        Description description = getDescriptionFromRequest(productRequestDto);
-        Set<Tag> tags = getTagsFromRequest(productRequestDto);
-        Product newProduct = Product.build().withName(name).withPrice(price).withId(id).withCreatedAt(oldProduct.getCreatedAt())
-                .withImage(image).withDescription(description).withTags(tags).build();
+        Product newProduct = Product.build()
+                .withId(id)
+                .withName(productRequestDto.getName())
+                .withPrice(getPriceFromRequest(productRequestDto))
+                .withCreatedAt(oldProduct.getCreatedAt())
+                .withImage(getImageFromRequest(productRequestDto))
+                .withDescription(getDescriptionFromRequest(productRequestDto))
+                .withTags(getTagsFromRequest(productRequestDto))
+                .build();
         Product updatedProduct = productRepository.update(oldProduct, newProduct);
         return new ProductResponseDto(updatedProduct.getId(), updatedProduct.getName(),
                 createPriceDtoToResponse(updatedProduct.getPrice()),
@@ -120,7 +127,7 @@ class ProductFacadeImpl implements ProductFacade {
         try {
             return productRequest.getTags().stream().map(tag -> Tag.build(tag.getName()))
                     .collect(Collectors.toSet());
-        }catch (NullPointerException e){
+        }catch (NullPointerException e) {
             return Collections.emptySet();
         }
     }
@@ -128,7 +135,7 @@ class ProductFacadeImpl implements ProductFacade {
     private Description getDescriptionFromRequest(ProductRequestDto productRequest){
         try {
             return Description.build(productRequest.getDescription().getText());
-        }catch (NullPointerException e){
+        }catch (NullPointerException e) {
             return null;
         }
     }
@@ -136,7 +143,7 @@ class ProductFacadeImpl implements ProductFacade {
     private Image getImageFromRequest(ProductRequestDto productRequest){
         try{
             return Image.build(productRequest.getImage().getUrl());
-        }catch (NullPointerException e){
+        }catch (NullPointerException e) {
             return null;
         }
     }

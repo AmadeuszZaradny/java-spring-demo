@@ -1,10 +1,11 @@
 package pl.zaradny.springApp.domain;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.base.Strings;
 import pl.zaradny.springApp.exceptions.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -27,7 +28,7 @@ public final class Product {
         this.image = image;
         this.description = description;
         this.createdAt = createdAt;
-        this.tags = tags;
+        this.tags = ImmutableSet.copyOf(tags);
     }
 
     public String getId() {
@@ -128,48 +129,43 @@ public final class Product {
             return this;
         }
 
-        private boolean isNameValid() {
-            try{
-                String validatedName = Preconditions.checkNotNull(this.name);
-                if(validatedName.isEmpty()) throw new EmptyProductNameException();
-            }catch (NullPointerException e){
+        private void validateName() {
+            if(Strings.isNullOrEmpty(this.name)){
                 throw new EmptyProductNameException();
             }
-            return true;
         }
 
-        private boolean isPriceValid(){
+        private void validatePrice(){
             try {
                 Preconditions.checkNotNull(this.price);
-            }catch (NullPointerException e){
+            }catch (NullPointerException e) {
                 throw new ProductPriceIsNullException();
             }
-            return true;
         }
 
-        private boolean isCreatedAtValid(){
+        private void validateCreatedAt(){
             try{
                 Preconditions.checkNotNull(this.createdAt);
-            }catch (NullPointerException e){
+            }catch (NullPointerException e) {
                 throw new EmptyCreatedAtException();
             }
-            return true;
         }
 
-        private boolean isIdValid(){
+        private void validateId(){
             try {
                 Preconditions.checkNotNull(this.id);
-            }catch (NullPointerException e){
+            }catch (NullPointerException e) {
                 throw new EmptyIdException();
             }
-            return true;
         }
 
         public Product build(){
-            if(isIdValid() && isCreatedAtValid() && isPriceValid() && isNameValid()){
-                return new Product(this.id, this.name, this.price, this.createdAt, this.image, this.description,
+            validateId();
+            validateCreatedAt();
+            validatePrice();
+            validateName();
+            return new Product(this.id, this.name, this.price, this.createdAt, this.image, this.description,
                         this.tags);
-            }else throw new BadProductFieldException();
         }
     }
 }

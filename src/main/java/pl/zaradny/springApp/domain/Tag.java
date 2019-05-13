@@ -17,7 +17,7 @@ public final class Tag {
         try {
             Preconditions.checkNotNull(name);
             Preconditions.checkArgument(name != "");
-        }catch (IllegalArgumentException | NullPointerException e){
+        }catch (IllegalArgumentException | NullPointerException e) {
             throw new EmptyTagException();
         }
         return new Tag(name);

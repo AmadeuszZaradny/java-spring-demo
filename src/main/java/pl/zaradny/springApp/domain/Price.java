@@ -1,6 +1,6 @@
 package pl.zaradny.springApp.domain;
 
-import com.google.common.base.Preconditions;
+import com.google.common.base.Verify;
 import pl.zaradny.springApp.exceptions.BadPriceException;
 
 import java.math.BigDecimal;
@@ -18,12 +18,10 @@ public final class Price {
     }
 
     public static Price build(BigDecimal amount, Currency currency) {
-        try {
-            Preconditions.checkNotNull(currency);
-            Preconditions.checkNotNull(amount);
-        }catch (NullPointerException e){
-            throw new BadPriceException();
-        }
+
+        Verify.verifyNotNull(amount, "Amount must be not null");
+        Verify.verifyNotNull(currency, "Currency must be not null");
+
         return new Price(amount, currency);
     }
 
@@ -31,8 +29,8 @@ public final class Price {
         try {
             BigDecimal priceAmount = new BigDecimal(amount);
             Currency priceCurrency = Currency.getInstance(currency);
-            return new Price(priceAmount, priceCurrency);
-        }catch (IllegalArgumentException | NullPointerException e){
+            return Price.build(priceAmount, priceCurrency);
+        }catch (IllegalArgumentException | NullPointerException e) {
             throw new BadPriceException();
         }
     }

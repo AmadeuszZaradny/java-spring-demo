@@ -38,9 +38,13 @@ class ProductEndpoint {
     }
 
     @GetMapping
-    ProductsResponseDto getProducts(@RequestParam(required=false) String tag){
-        if(tag == null || tag.isEmpty()) return productFacade.getAll();
-        else return productFacade.findByTag(tag);
+    ProductsResponseDto getAllProducts(){
+        return productFacade.getAll();
+    }
+
+    @GetMapping(params = "tag")
+    ProductsResponseDto getProductsWithTag(@RequestParam String tag){
+        return productFacade.findByTag(tag);
     }
 
 }
